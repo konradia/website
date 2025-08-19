@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Prompts para Docentes</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #1e3a8a;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            font-size: 1em;
+            resize: vertical;
+            box-sizing: border-box;
+            transition: box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
+        }
+
+        select {
+            cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23666'%3E%3Cpath d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' fill-rule='evenodd'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .button-group button {
+            flex: 1;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #generateButton {
+            background-color: #1e3a8a;
+        }
+
+        #generateButton:hover {
+            background-color: #1c2b64;
+        }
+
+        .prompt-output-container {
+            position: relative;
+            margin-top: 25px;
+            padding-bottom: 40px;
+        }
+
+        pre {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            padding-right: 50px;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            background-color: #fafafa;
+            font-size: 1em;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #555;
+            box-sizing: border-box;
+        }
+
+        .output-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .output-buttons button {
+            width: auto;
+            padding: 5px 10px;
+            font-size: 0.9em;
+            background-color: #d1d5db;
+            color: #4b5563;
+            border: 1px solid #9ca3af;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .output-buttons button:hover {
+            background-color: #e5e7eb;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #successNotification {
+            background-color: #10b981;
+            color: white;
+        }
+
+        #errorNotification {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        .invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Generador de Prompts para IA</h1>
+        <div class="form-group">
+            <label for="rolSelect">Rol:</label>
+            <select id="rolSelect">
+                <option value="diseñador de actividades de aprendizaje">diseñador de actividades de aprendizaje</option>
+                <option value="especialista en gamificación">especialista en gamificación</option>
+                <option value="pedagogo digital">pedagogo digital</option>
+                <option value="mentor del pensamiento crítico">mentor del pensamiento crítico</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="modeloESelect">Seleccionar E:</label>
+            <select id="modeloESelect">
+                <option value="enganche">Enganchar</option>
+                <option value="diagnóstico">Elicitar</option>
+                <option value="indagación">Explorar</option>
+                <option value="concepto">Explicar</option>
+                <option value="aplicación">Elaborar</option>
+                <option value="evaluación">Evaluar</option>
+                <option value="innovación">Extender</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="moduloInput">Módulo/Clase:</label>
+            <textarea id="moduloInput" placeholder="Ej: Introducción al Desarrollo Web"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="semestreSelect">Semestre:</label>
+            <select id="semestreSelect">
+                <option value="1er">1er</option>
+                <option value="5to">5to</option>
+                <option value="9no">9no</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="nivelSelect">Nivel de Estudio:</label>
+            <select id="nivelSelect">
+                <option value="pregrado">pregrado</option>
+                <option value="especialización">especialización</option>
+                <option value="maestría">maestría</option>
+                <option value="doctorado">doctorado</option>
+            </select>
+        </div>
+        <div class="form-group" id="programaSelectGroup">
+            <label for="programaSelect">Programa:</label>
+            <select id="programaSelect">
+                <option value="Administración de Empresas">Administración de Empresas</option>
+                <option value="Administración de Negocios Internacionales">Administración de Negocios Internacionales</option>
+                <option value="Desarrollo de Software (virtual)">Desarrollo de Software (virtual)</option>
+                <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
+                <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Matemáticas">Matemáticas</option>
+                <option value="Psicología">Psicología</option>
+            </select>
+        </div>
+        <div class="form-group" id="programaTextInputGroup" style="display: none;">
+            <label for="programaTextInput">Programa:</label>
+            <textarea id="programaTextInput" placeholder="Ej: Psicología Forense y Criminal"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="temaEspecificoInput">Tema Específico:</label>
+            <textarea id="temaEspecificoInput" placeholder="Ej: la importancia de las matrices"></textarea>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="moodleCheckbox">
+            <label for="moodleCheckbox">Considerar herramientas de Moodle</label>
+        </div>
+
+        <div class="button-group">
+            <button id="generateButton" onclick="generarPrompt()">Generar Prompt</button>
+        </div>
+
+        <div class="prompt-output-container">
+            <pre id="promptOutput"></pre>
+            <div class="output-buttons">
+                <button id="copyButton" onclick="copyPrompt()">Copiar 📋</button>
+                <button id="clearButton" onclick="clearPrompt()">Borrar 🗑️</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="successNotification" class="notification">
+        ¡Prompt copiado al portapapeles! ✅
+    </div>
+    <div id="errorNotification" class="notification">
+        ⚠️ Los campos de Módulo/Clase y Tema Específico son obligatorios.
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const nivelSelect = document.getElementById('nivelSelect');
+            nivelSelect.addEventListener('change', actualizarCampoPrograma);
+            actualizarCampoPrograma(); // Llama a la función al cargar la página para el estado inicial
+        });
+
+        function showNotification(elementId) {
+            const notification = document.getElementById(elementId);
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function actualizarCampoPrograma() {
+            const nivelSelect = document.getElementById('nivelSelect').value;
+            const programaSelectGroup = document.getElementById('programaSelectGroup');
+            const programaTextInputGroup = document.getElementById('programaTextInputGroup');
+
+            if (nivelSelect === 'pregrado') {
+                programaSelectGroup.style.display = 'block';
+                programaTextInputGroup.style.display = 'none';
+                document.getElementById('programaTextInput').value = ''; // Limpiar el campo de texto si se oculta
+            } else {
+                programaSelectGroup.style.display = 'none';
+                programaTextInputGroup.style.display = 'block';
+                document.getElementById('programaSelect').value = document.getElementById('programaSelect').options[0].value; // Restablecer el select si se oculta
+            }
+        }
+
+        function generarPrompt() {
+            const moduloInput = document.getElementById('moduloInput');
+            const temaEspecificoInput = document.getElementById('temaEspecificoInput');
+
+            // Quita la clase 'invalid' de todos los campos
+            moduloInput.classList.remove('invalid');
+            temaEspecificoInput.classList.remove('invalid');
+
+            let hasError = false;
+
+            if (moduloInput.value.trim() === '') {
+                moduloInput.classList.add('invalid');
+                hasError = true;
+            }
+
+            if (temaEspecificoInput.value.trim() === '') {
+                temaEspecificoInput.classList.add('invalid');
+                hasError = true;
+            }
+
+            const nivelEstudio = document.getElementById('nivelSelect').value;
+            let programa;
+            
+            if (nivelEstudio === 'pregrado') {
+                programa = document.getElementById('programaSelect').value;
+            } else {
+                programa = document.getElementById('programaTextInput').value;
+                if (programa.trim() === '') {
+                    document.getElementById('programaTextInput').classList.add('invalid');
+                    hasError = true;
+                }
+            }
+
+            if (hasError) {
+                showNotification('errorNotification');
+                return;
+            }
+
+            const rol = document.getElementById('rolSelect').value;
+            const modeloE = document.getElementById('modeloESelect').value;
+            const semestre = document.getElementById('semestreSelect').value;
+            const usarMoodle = document.getElementById('moodleCheckbox').checked;
+
+            let learningObjectivePhrase = '';
+
+            switch (modeloE) {
+                case 'enganche':
+                    learningObjectivePhrase = 'captar la atención de los estudiantes, despertar su curiosidad sobre';
+                    break;
+                case 'diagnóstico':
+                    learningObjectivePhrase = 'generar interés y abrir espacios de discusión sobre';
+                    break;
+                case 'indagación':
+                    learningObjectivePhrase = 'generar conocimientos previos necesarios sobre';
+                    break;
+                case 'concepto':
+                    learningObjectivePhrase = 'construir conceptos base en situaciones de aprendizaje diversas sobre';
+                    break;
+                case 'aplicación':
+                    learningObjectivePhrase = 'realizar actividades prácticas para que los estudiantes comprendan conceptos sobre';
+                    break;
+                case 'evaluación':
+                    learningObjectivePhrase = 'valorar el desempeño de los estudiantes en su comprensión y habilidades sobre';
+                    break;
+                case 'innovación':
+                    learningObjectivePhrase = 'poner en práctica, en lo posible en un contexto real, los aprendizajes y habilidades adquiridos sobre';
+                    break;
+            }
+            
+            let promptFinal = `Asume el rol de ${rol} y genera 3 ideas para la etapa de ${modeloE} para una clase sobre ${moduloInput.value}. Las ideas deben ser creativas, inusuales y fáciles de implementar para un grupo de estudiantes de ${semestre} semestre del programa de ${nivelEstudio} en ${programa}. Las ideas deben ${learningObjectivePhrase} ${temaEspecificoInput.value}, y hacerles ver la relevancia de este tema en sus vidas.`;
+            
+            if (usarMoodle) {
+                promptFinal += ` Considera el uso de las herramientas dispuestas en Moodle y ejemplos de actividades específicas.`;
+            }
+            
+            document.getElementById('promptOutput').innerText = promptFinal;
+        }
+
+        function clearPrompt() {
+            document.getElementById('promptOutput').innerText = '';
+            document.getElementById('moduloInput').classList.remove('invalid');
+            document.getElementById('temaEspecificoInput').classList.remove('invalid');
+            document.getElementById('programaTextInput').classList.remove('invalid');
+        }
+
+        function copyPrompt() {
+            const promptText = document.getElementById('promptOutput').innerText;
+            if (promptText.trim() === '') {
+                return;
+            }
+
+            navigator.clipboard.writeText(promptText)
+                .then(() => {
+                    showNotification('successNotification');
+                })
+                .catch(err => {
+                    console.error('Error al copiar el prompt:', err);
+                    alert('No se pudo copiar el prompt al portapapeles. Por favor, inténtalo manualmente.');
+                });
+        }
+    </script>
+</body>
+
+</html>
