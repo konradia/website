@@ -84,6 +84,22 @@
             font-weight: normal;
         }
 
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .radio-group label {
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+
+        .radio-group input[type="radio"] {
+            width: auto;
+            margin-right: 5px;
+        }
+
         .button-group {
             display: flex;
             gap: 10px;
@@ -133,16 +149,17 @@
         }
 
         .output-buttons {
-            position: absolute;
-            top: 10px;
+            position: relative;
+            top: 0px;
             right: 10px;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             gap: 5px;
+            justify-content: center;
         }
 
         .output-buttons button {
-            width: auto;
+            width: 20%;
             padding: 5px 10px;
             font-size: 0.9em;
             background-color: #d1d5db;
@@ -226,8 +243,15 @@
             <label for="semestreSelect">Semestre:</label>
             <select id="semestreSelect">
                 <option value="1er">1er</option>
+                <option value="2do">2do</option>
+                <option value="3ro">3ro</option>
+                <option value="4to">4to</option>
                 <option value="5to">5to</option>
+                <option value="6to">6to</option>
+                <option value="7to">7to</option>
+                <option value="8vo">8vo</option>
                 <option value="9no">9no</option>
+                <option value="10mo">10mo</option>
             </select>
         </div>
         <div class="form-group">
@@ -243,7 +267,8 @@
             <label for="programaSelect">Programa:</label>
             <select id="programaSelect">
                 <option value="Administración de Empresas">Administración de Empresas</option>
-                <option value="Administración de Negocios Internacionales">Administración de Negocios Internacionales</option>
+                <option value="Administración de Negocios Internacionales">Administración de Negocios Internacionales
+                </option>
                 <option value="Desarrollo de Software (virtual)">Desarrollo de Software (virtual)</option>
                 <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
                 <option value="Ingeniería Industrial">Ingeniería Industrial</option>
@@ -260,6 +285,25 @@
             <label for="temaEspecificoInput">Tema Específico:</label>
             <textarea id="temaEspecificoInput" placeholder="Ej: tecnologías base para el desarrollo web"></textarea>
         </div>
+
+        <div class="form-group">
+            <label>Medio de la clase:</label>
+            <div class="radio-group">
+                <input type="radio" id="presencial" name="medioClase" value="presencial" checked>
+                <label for="presencial">Presencial</label>
+                <input type="radio" id="virtual" name="medioClase" value="virtual">
+                <label for="virtual">Virtual</label>
+                <input type="radio" id="sincronicoremoto" name="medioClase" value="sincrónico remoto">
+                <label for="virtual">Sincrónico remoto</label>
+            </div>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="tecnologiaCheckbox">
+            <label for="tecnologiaCheckbox">Las actividades involucran el uso de dispositivos tecnológicos (computador,
+                móvil, tablet, etc.)</label>
+        </div>
+
         <div class="checkbox-group">
             <input type="checkbox" id="moodleCheckbox">
             <label for="moodleCheckbox">Considerar herramientas de Moodle</label>
@@ -270,11 +314,12 @@
         </div>
 
         <div class="prompt-output-container">
-            <pre id="promptOutput"></pre>
             <div class="output-buttons">
                 <button id="copyButton" onclick="copyPrompt()">Copiar 📋</button>
                 <button id="clearButton" onclick="clearPrompt()">Borrar 🗑️</button>
             </div>
+            <pre id="promptOutput"></pre>
+
         </div>
     </div>
 
@@ -308,11 +353,11 @@
             if (nivelSelect === 'pregrado') {
                 programaSelectGroup.style.display = 'block';
                 programaTextInputGroup.style.display = 'none';
-                document.getElementById('programaTextInput').value = ''; // Limpiar el campo de texto si se oculta
+                document.getElementById('programaTextInput').value = '';
             } else {
                 programaSelectGroup.style.display = 'none';
                 programaTextInputGroup.style.display = 'block';
-                document.getElementById('programaSelect').value = document.getElementById('programaSelect').options[0].value; // Restablecer el select si se oculta
+                document.getElementById('programaSelect').value = document.getElementById('programaSelect').options[0].value;
             }
         }
 
@@ -320,7 +365,6 @@
             const moduloInput = document.getElementById('moduloInput');
             const temaEspecificoInput = document.getElementById('temaEspecificoInput');
 
-            // Quita la clase 'invalid' de todos los campos
             moduloInput.classList.remove('invalid');
             temaEspecificoInput.classList.remove('invalid');
 
@@ -338,7 +382,7 @@
 
             const nivelEstudio = document.getElementById('nivelSelect').value;
             let programa;
-            
+
             if (nivelEstudio === 'pregrado') {
                 programa = document.getElementById('programaSelect').value;
             } else {
@@ -358,6 +402,9 @@
             const modeloE = document.getElementById('modeloESelect').value;
             const semestre = document.getElementById('semestreSelect').value;
             const usarMoodle = document.getElementById('moodleCheckbox').checked;
+            const usarTecnologia = document.getElementById('tecnologiaCheckbox').checked;
+            const medioClase = document.querySelector('input[name="medioClase"]:checked').value;
+
 
             let learningObjectivePhrase = '';
 
@@ -384,13 +431,30 @@
                     learningObjectivePhrase = 'poner en práctica, en lo posible en un contexto real, los aprendizajes y habilidades adquiridos sobre';
                     break;
             }
-            
+
             let promptFinal = `Asume el rol de ${rol} y genera 3 ideas para la etapa de ${modeloE} para una clase sobre ${moduloInput.value}. Las ideas deben ser creativas, inusuales y fáciles de implementar para un grupo de estudiantes de ${semestre} semestre del programa de ${nivelEstudio} en ${programa}. Las ideas deben ${learningObjectivePhrase} ${temaEspecificoInput.value}, y hacerles ver la relevancia de este tema en sus vidas.`;
-            
+
+            // Agregar las nuevas condiciones al prompt
+            if (usarTecnologia) {
+                promptFinal += ` Las actividades propuestas deben involucrar el uso de dispositivos tecnológicos (computador, móvil, tablet, etc.).`;
+            }
+
             if (usarMoodle) {
                 promptFinal += ` Considera el uso de las herramientas dispuestas en Moodle y ejemplos de actividades específicas.`;
             }
-            
+
+            if (medioClase === 'virtual') {
+                promptFinal += ` Ten en cuenta que la clase se desarrolla en un entorno virtual.`;
+            }
+
+            if (medioClase === 'presencial') {
+                promptFinal += ` Ten en cuenta que la clase se desarrolla en un entorno presencial.`;
+            }
+
+            if (medioClase === 'sincrónico remoto') {
+                promptFinal += ` Ten en cuenta que la clase se desarrolla en un entorno sincrónico remoto.`;
+            }
+
             document.getElementById('promptOutput').innerText = promptFinal;
         }
 
