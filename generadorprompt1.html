@@ -230,7 +230,7 @@
                 <option value="diagnóstico">Elicitar</option>
                 <option value="indagación">Explorar</option>
                 <option value="concepto">Explicar</option>
-                <option value="aplicación">Elaborar</option>
+                <option value="elaboración">Elaborar</option>
                 <option value="evaluación">Evaluar</option>
                 <option value="innovación">Extender</option>
             </select>
@@ -263,9 +263,10 @@
                 <option value="doctorado">doctorado</option>
             </select>
         </div>
+        
         <div class="form-group" id="programaSelectGroup">
             <label for="programaSelect">Programa:</label>
-            <select id="programaSelect">
+            <select id="programaSelect" onchange="actualizarCampoPrograma()">
                 <option value="Administración de Empresas">Administración de Empresas</option>
                 <option value="Administración de Negocios Internacionales">Administración de Negocios Internacionales
                 </option>
@@ -275,9 +276,11 @@
                 <option value="Marketing">Marketing</option>
                 <option value="Matemáticas">Matemáticas</option>
                 <option value="Psicología">Psicología</option>
+                <option value="otro">Otro</option>
             </select>
         </div>
-        <div class="form-group" id="programaTextInputGroup" style="display: none;">
+
+        <div class="form-group" id="programaTextInputGroup" style="display: block;">
             <label for="programaTextInput">Programa:</label>
             <textarea id="programaTextInput" placeholder="Ej: Psicología Forense y Criminal"></textarea>
         </div>
@@ -298,6 +301,30 @@
             </div>
         </div>
 
+        <div class="form-group">
+            <label for="estrategiaSelect">Estrategia didáctica/pedagógica:</label>
+            <select id="estrategiaSelect">
+                <option value="Aprendizaje Basado en Proyectos">Aprendizaje Basado en Proyectos (ABP/PBL - Project-Based
+                    Learning)</option>
+                <option value="Aprendizaje Basado en Problemas">Aprendizaje Basado en Problemas (ABP/PBL - Problem-Based
+                    Learning)</option>
+                <option value="Aprendizaje Basado en Retos">Aprendizaje Basado en Retos (Challenge-Based Learning)
+                </option>
+                <option value="Aprendizaje Cooperativo">Aprendizaje Cooperativo (Cooperative Learning)</option>
+                <option value="Estudio de Casos">Estudio de Casos (Case Study Method)</option>
+                <option value="Debate y Discusión Socrática">Debate y Discusión Socrática</option>
+                <option value="Gamificacion">Gamificación</option>
+                <option value="Juego de Roles">Juego de Roles (Role-Playing)</option>
+                <option value="Simulaciones y Serious Games">Simulaciones y Serious Games</option>
+                <option value="Aula Invertida">Aula Invertida (Flipped Classroom)</option>
+                <option value="Microaprendizaje">Microaprendizaje</option>
+                <option value="Aprendizaje Personalizado Adaptativo">Aprendizaje Personalizado Adaptativo</option>
+                <option value="Pensamiento de Diseño">Pensamiento de Diseño (Design Thinking)</option>
+                <option value="Mapas Mentales y Conceptuales">Mapas Mentales y Conceptuales</option>                
+                <option value="que más se ajuste">Ninguna en paricular</option>
+            </select>
+        </div>
+
         <div class="checkbox-group">
             <input type="checkbox" id="tecnologiaCheckbox">
             <label for="tecnologiaCheckbox">Las actividades involucran el uso de dispositivos tecnológicos (computador,
@@ -307,6 +334,11 @@
         <div class="checkbox-group">
             <input type="checkbox" id="moodleCheckbox">
             <label for="moodleCheckbox">Considerar herramientas de Moodle</label>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="iaCheckbox">
+            <label for="iaCheckbox">Considerar herramientas de Inteligencia Artificial</label>
         </div>
 
         <div class="button-group">
@@ -349,17 +381,44 @@
             const nivelSelect = document.getElementById('nivelSelect').value;
             const programaSelectGroup = document.getElementById('programaSelectGroup');
             const programaTextInputGroup = document.getElementById('programaTextInputGroup');
+            const programaTextInput = document.getElementById('programaTextInput');
+            const programaSelect = document.getElementById('programaSelect');
+
 
             if (nivelSelect === 'pregrado') {
+                // Lógica si el nivel es 'pregrado': Mostramos el SELECT predefinido
                 programaSelectGroup.style.display = 'block';
                 programaTextInputGroup.style.display = 'none';
-                document.getElementById('programaTextInput').value = '';
-            } else {
+
+                // Limpiar el campo de texto libre
+                programaTextInput.value = '';
+
+                // NUEVA VALIDACIÓN: Si el nivel es 'otro'
+
+                if (programaSelect.value === 'otro') {
+                    // Lógica si el nivel es 'otro': Mostramos el TEXT INPUT
+                    //programaSelectGroup.style.display = 'none';
+                    programaTextInputGroup.style.display = 'block';
+
+                    // Limpiar el select a su valor por defecto (asumo que tiene una opción inicial)
+                    programaSelect.value = programaSelect.options[0].value;
+                }
+            }
+
+            // Caso por defecto (el 'else' original, que cubre otros niveles además de 'otro')
+            else {
+                // Si hay otros valores (posgrado, etc.) también mostramos el TEXT INPUT
+                // Esto depende de tu flujo, pero es una lógica de fallback segura:
                 programaSelectGroup.style.display = 'none';
                 programaTextInputGroup.style.display = 'block';
-                document.getElementById('programaSelect').value = document.getElementById('programaSelect').options[0].value;
+
+                // Limpiar el select a su valor por defecto
+                programaSelect.value = programaSelect.options[0].value;
             }
         }
+
+        
+
 
         function generarPrompt() {
             const moduloInput = document.getElementById('moduloInput');
@@ -403,6 +462,7 @@
             const semestre = document.getElementById('semestreSelect').value;
             const usarMoodle = document.getElementById('moodleCheckbox').checked;
             const usarTecnologia = document.getElementById('tecnologiaCheckbox').checked;
+            const usarIA = document.getElementById('iaCheckbox').checked;
             const medioClase = document.querySelector('input[name="medioClase"]:checked').value;
 
 
@@ -421,8 +481,8 @@
                 case 'concepto':
                     learningObjectivePhrase = 'construir conceptos base en situaciones de aprendizaje diversas sobre';
                     break;
-                case 'aplicación':
-                    learningObjectivePhrase = 'realizar actividades prácticas para que los estudiantes comprendan conceptos sobre';
+                case 'elaboración':
+                    learningObjectivePhrase = 'realizar actividades prácticas para que los estudiantes transfieran a contextos reales los conocimientos construidos o adquiridos sobre';
                     break;
                 case 'evaluación':
                     learningObjectivePhrase = 'valorar el desempeño de los estudiantes en su comprensión y habilidades sobre';
@@ -441,6 +501,14 @@
 
             if (usarMoodle) {
                 promptFinal += ` Considera el uso de las herramientas dispuestas en Moodle y ejemplos de actividades específicas.`;
+            }
+
+            if (usarIA) {
+                promptFinal += ` La actividad debe involucrar el uso de IA.`;
+            }
+            const estrategia = document.getElementById('estrategiaSelect').value;            
+            if (estrategia.length > 0) {
+                promptFinal += ` La actividad puede tener un enfoque didáctico/pedagógico de ` + estrategia + `.` ;
             }
 
             if (medioClase === 'virtual') {
