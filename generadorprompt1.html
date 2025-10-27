@@ -344,7 +344,10 @@
         <div class="button-group">
             <button id="generateButton" onclick="generarPrompt()">Generar Prompt</button>
         </div>
-
+ <div class="checkbox-group">
+            <input type="checkbox" id="rubrikCheckbox">
+            <label for="rubrikCheckbox">Generar rúbrica de evaluación</label>
+        </div>
         <div class="prompt-output-container">
             <div class="output-buttons">
                 <button id="copyButton" onclick="copyPrompt()">Copiar 📋</button>
@@ -463,6 +466,7 @@
             const usarMoodle = document.getElementById('moodleCheckbox').checked;
             const usarTecnologia = document.getElementById('tecnologiaCheckbox').checked;
             const usarIA = document.getElementById('iaCheckbox').checked;
+             const usarRubrica = document.getElementById('rubrikCheckbox').checked;
             const medioClase = document.querySelector('input[name="medioClase"]:checked').value;
 
 
@@ -506,6 +510,11 @@
             if (usarIA) {
                 promptFinal += ` La actividad debe involucrar el uso de IA.`;
             }
+
+            if (usarRubrica) {
+                promptFinal += ` También quiero generar la rúbrica de evaluación con 4 criterios y 4 niveles incluyendo puntos para poder integrarla en moodle.`;
+            }
+            
             const estrategia = document.getElementById('estrategiaSelect').value;            
             if (estrategia.length > 0) {
                 promptFinal += ` La actividad puede tener un enfoque didáctico/pedagógico de ` + estrategia + `.` ;
